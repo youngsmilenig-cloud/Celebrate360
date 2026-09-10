@@ -1,1 +1,44 @@
+name: Build Celebrate360 APK
 
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Extract Celebrate360 project
+        run: |
+          mkdir project
+          unzip -q Celebrate360_v2_1_apk_ready.zip -d project
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+
+      - name: Create Android project
+        working-directory: project/celebrate360_v2_0
+        run: flutter create . --platforms=android --org com.celebrate360
+
+      - name: Install Flutter packages
+        working-directory: project/celebrate360_v2_0
+        run: flutter pub get
+
+      - name: Analyze project
+        working-directory: project/celebrate360_v2_0
+        run: flutter analyze
+
+      - name: Build release APK
+        working-directory: project/celebrate360_v2_0
+        run: flutter build apk --release
+
+      - name: Upload Celebrate360 APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: Celebrate360-APK
+          path: project/celebrate360_v2_0/build/app/outputs/flutter-apk/app-release.apk
